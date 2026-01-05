@@ -1,0 +1,25 @@
+# Core dependencies
+pandas==1.5.3
+numpy==1.23.5
+requests==2.28.2
+tqdm==4.65.0
+
+# Kaggle API for dataset download
+kaggle==1.5.16
+
+# Deep Learning frameworks (choose based on your preference)
+torch==2.0.1
+torchvision==0.15.2
+# tensorflow==2.12.0  # Uncomment if using TensorFlow instead
+
+# Image processing
+Pillow==9.5.0
+opencv-python==4.7.0.72
+
+# Data visualization
+matplotlib==3.7.1
+seaborn==0.12.2
+
+# Utilities
+scikit-learn==1.2.2
+pydicom==2.3.1  # For handling DICOM medical images if needed
