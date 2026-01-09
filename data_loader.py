@@ -204,7 +204,7 @@ def create_data_loaders(
     
     # Create datasets
     train_dataset = CheXpertDataset(
-        csv_path=data_dir / 'train_labels.csv',
+        csv_path=os.path.join(data_dir, 'train.csv'),
         root_dir=data_dir.parent,
         transform=get_transforms(image_size, is_training=True),
         policy='ones',
@@ -212,20 +212,20 @@ def create_data_loaders(
     )
     
     val_dataset = CheXpertDataset(
-        csv_path=data_dir / 'valid_labels.csv',
+        csv_path=data_dir / 'valid.csv',
         root_dir=data_dir.parent,
         transform=get_transforms(image_size, is_training=False),
         policy='ones',
         selected_labels=selected_labels
     )
     
-    test_dataset = CheXpertDataset(
-        csv_path=data_dir / 'test_labels.csv',
-        root_dir=data_dir.parent,
-        transform=get_transforms(image_size, is_training=False),
-        policy='ones',
-        selected_labels=selected_labels
-    )
+    # test_dataset = CheXpertDataset(
+    #     csv_path=data_dir / 'test_labels.csv',
+    #     root_dir=data_dir.parent,
+    #     transform=get_transforms(image_size, is_training=False),
+    #     policy='ones',
+    #     selected_labels=selected_labels
+    # )
     
     # Create data loaders
     train_loader = DataLoader(
@@ -244,15 +244,15 @@ def create_data_loaders(
         pin_memory=True
     )
     
-    test_loader = DataLoader(
-        test_dataset,
-        batch_size=batch_size,
-        shuffle=False,
-        num_workers=num_workers,
-        pin_memory=True
-    )
+    # test_loader = DataLoader(
+    #     test_dataset,
+    #     batch_size=batch_size,
+    #     shuffle=False,
+    #     num_workers=num_workers,
+    #     pin_memory=True
+    # )
     
-    return train_loader, val_loader, test_loader
+    return train_loader, val_loader#, test_loader
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 # CheXpert Dataset Downloader and Structurer
 
-A Python project for downloading and organizing the CheXpert dataset for deep learning model training.
+A Python project for training deep learning architectures on the CheXpert dataset.
 
 ## Overview
 
@@ -13,18 +13,61 @@ CheXpert is a large public dataset for chest radiograph interpretation, consisti
 
 ## Installation
 
-1. Clone or download this project
-2. Create a virtual environment (recommended):
+### Option 1: Using Conda (Recommended)
+
+**For Local Machines:**
+
+1. Create the conda environment from the YML file:
 
 ```bash
-python -m venv venv
+conda env create -f environment.yml
+```
+
+2. Activate the environment:
+
+```bash
+conda activate chexpert
+```
+
+**For SLURM Clusters:**
+
+The `environment.yml` file is designed to work with any CUDA version on your cluster. Use the provided setup script:
+
+```bash
+# Make the script executable
+chmod +x slurm_setup.sh
+
+# Run the setup (detects CUDA and installs appropriate PyTorch)
+./slurm_setup.sh
+```
+
+This script will:
+- Detect your cluster's CUDA version
+- Create the conda environment
+- Install the correct PyTorch build for your CUDA version
+- Verify the installation
+
+### Option 2: Using pip with venv
+
+1. Create a virtual environment:
+
+```bash
+python3.10 -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
-3. Install dependencies:
+2. Install dependencies:
 
 ```bash
 pip install -r requirements.txt
+```
+
+### Verify Installation
+
+```bash
+python --version  # Should show Python 3.10.8
+python -c "import torch; print(torch.__version__)"  # Should show PyTorch 2.0.1
+python -c "import torch; print(torch.cuda.is_available())"  # Check GPU availability
 ```
 
 ## Dataset Download
@@ -124,7 +167,15 @@ python download_chexpert.py --download_test_labels
 ```
 chexpert-downloader/
 ├── download_chexpert.py    # Main script for downloading and structuring
-├── requirements.txt        # Project dependencies
+├── data_loader.py          # PyTorch Dataset class for loading data
+├── train_model.py          # Training script with K-fold cross-validation
+├── requirements.txt        # pip dependencies
+├── environment.yml         # Conda environment specification
+├── .env.example            # Example configuration file (copy to .env)
+├── kaggle.json            # Kaggle API credentials (sample - DO NOT COMMIT)
+├── slurm_setup.sh         # SLURM cluster setup script
+├── train_job.slurm        # SLURM job submission script
+├── .gitignore             # Git ignore file
 ├── README.md              # This file
 └── data/                  # Output directory (created when running script)
     ├── chexpert_raw/      # Raw downloaded data
@@ -224,3 +275,117 @@ Feel free to submit issues or pull requests to improve this tool.
 For questions about the dataset, visit the [CheXpert website](https://stanfordmlgroup.github.io/competitions/chexpert/).
 
 For issues with this tool, please open an issue in the repository.
+
+## Running on SLURM Clusters
+
+### Setup
+
+1. **Load required modules** (adjust based on your cluster):
+```bash
+module load anaconda3
+# module load cuda/11.8  # Optional - usually auto-detected
+```
+
+2. **Run setup script**:
+```bash
+chmod +x slurm_setup.sh
+./slurm_setup.sh
+```
+
+3. **Prepare your data**:
+```bash
+# Download dataset (with Kaggle API already configured)
+python download_chexpert.py --use_kaggle --output_dir ./data
+```
+
+4. **Configure training parameters**:
+```bash
+# Copy the example configuration file
+cp .env.example .env
+
+# Edit .env with your preferred settings
+nano .env  # or vim .env
+```
+
+### Submit Training Job
+
+1. **Edit the SLURM script** (`train_job.slurm`) if needed:
+   - Adjust `#SBATCH` parameters for your cluster
+   - Set partition name (check with `sinfo`)
+   - Configure GPU requirements
+   - Modify module loads if needed
+
+2. **The training configuration is now in `.env` file**:
+```bash
+# Example .env content:
+MODEL=efficientnet_v2_s
+EPOCHS=100
+BATCH_SIZE=32
+DEVICE=cuda
+```
+
+3. **Submit the job**:
+```bash
+sbatch train_job.slurm
+```
+
+4. **Monitor the job**:
+```bash
+# Check job status
+squeue -u $USER
+
+# View output logs
+tail -f logs/train_<job_id>.out
+
+# View error logs
+tail -f logs/train_<job_id>.err
+```
+
+### Training Different Models
+
+Simply edit the `.env` file:
+```bash
+# For EfficientNetV2-Medium
+MODEL=efficientnet_v2_m
+BATCH_SIZE=16
+EPOCHS=100
+
+# For Vision Transformer
+MODEL=vit_b_16
+BATCH_SIZE=16
+LEARNING_RATE=0.00005
+
+# For ResNet50
+MODEL=resnet50
+BATCH_SIZE=64
+EPOCHS=100
+```
+
+Then submit:
+```bash
+sbatch train_job.slurm
+```
+
+### Multiple Experiments
+
+Run multiple experiments with different configurations:
+```bash
+# Create different config files
+cp .env.example .env.efficientnet
+cp .env.example .env.resnet
+cp .env.example .env.vit
+
+# Edit each file with different settings
+# ...
+
+# Submit jobs with different configs
+cp .env.efficientnet .env && sbatch train_job.slurm
+cp .env.resnet .env && sbatch train_job.slurm
+cp .env.vit .env && sbatch train_job.slurm
+```
+
+### CUDA Version Notes
+
+- **You don't need to specify CUDA version** - the setup script detects it automatically
+- PyTorch will use whatever CUDA is available on the compute node
+- If you get CUDA errors, check: `nvidia-smi` and `nvcc --version` on the compute node
