@@ -1,9 +1,9 @@
 #!/bin/bash
-#SBATCH --job-name=tta_chexpert
-#SBATCH --mem 32G
-#SBATCH -c 16
-#SBATCH -p short-simple
-#SBATCH --gpus=1
+#SBATCH --job-name=chexpert
+#SBATCH --mem 64G
+#SBATCH -c 32
+#SBATCH -p short-complex
+#SBATCH --gpus=4
 #SBATCH --mail-type=FAIL,END
 #SBATCH --mail-user=tta@cin.ufpe.br
 
@@ -33,7 +33,6 @@ echo ""
 echo "PyTorch GPU check:"
 python -c "import torch; print(f'PyTorch version: {torch.__version__}'); print(f'CUDA available: {torch.cuda.is_available()}'); print(f'GPU count: {torch.cuda.device_count()}'); print(f'Current device: {torch.cuda.current_device() if torch.cuda.is_available() else \"CPU\"}'); print(f'Device name: {torch.cuda.get_device_name(0) if torch.cuda.is_available() else \"CPU\"}')"
 
-# Training configuration
 # Load configuration from .env file
 echo ""
 echo "Loading configuration from .env file..."
@@ -58,23 +57,42 @@ echo "Training Configuration:"
 echo "Model: $MODEL"
 echo "Epochs: $EPOCHS"
 echo "Batch Size: $BATCH_SIZE"
+echo "Learning Rate: $LEARNING_RATE"
+echo "Weight Decay: $WEIGHT_DECAY"
 echo "K-Folds: $N_SPLITS"
+echo "Scheduler: $SCHEDULER"
+echo "Early Stopping Patience: $EARLY_STOPPING_PATIENCE"
 echo "Device: $DEVICE"
 echo "Data Directory: $DATA_DIR"
+echo "Save Directory: $SAVE_DIR"
+echo "Checkpoint Interval: $CHECKPOINT_INTERVAL"
+echo "Random Seed: $SEED"
 echo "================================================"
 echo ""
 
+# Validate required parameters
+if [ -z "$MODEL" ] || [ -z "$EPOCHS" ] || [ -z "$BATCH_SIZE" ]; then
+    echo "✗ ERROR: Missing required configuration parameters!"
+    echo "Please ensure MODEL, EPOCHS, and BATCH_SIZE are set in .env"
+    exit 1
+fi
+
 # Run training
 python train_model.py \
-    --model $MODEL \
-    --epochs $EPOCHS \
-    --batch_size $BATCH_SIZE \
-    --n_splits $N_SPLITS \
-    --device $DEVICE \
-    --data_dir $DATA_DIR \
-    --checkpoint_interval $CHECKPOINT_INTERVAL \
-    --save_dir ./checkpoints \
-    --seed 42
+    --model "$MODEL" \
+    --epochs "$EPOCHS" \
+    --batch_size "$BATCH_SIZE" \
+    --learning_rate "$LEARNING_RATE" \
+    --weight_decay "$WEIGHT_DECAY" \
+    --n_splits "$N_SPLITS" \
+    --scheduler "$SCHEDULER" \
+    --early_stopping_patience "$EARLY_STOPPING_PATIENCE" \
+    --device "$DEVICE" \
+    --data_dir "$DATA_DIR" \
+    --checkpoint_interval "$CHECKPOINT_INTERVAL" \
+    --save_dir "$SAVE_DIR" \
+    --num_workers "$NUM_WORKERS" \
+    --seed "$SEED"
 
 echo ""
 echo "================================================"

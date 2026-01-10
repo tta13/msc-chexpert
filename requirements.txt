@@ -7,6 +7,7 @@ tqdm==4.65.0
 # Deep Learning frameworks (choose based on your preference)
 torch==2.0.1
 torchvision==0.15.2
+timm==0.9.12  # PyTorch Image Models (TIMM) for model architectures
 
 # Image processing
 Pillow==9.5.0

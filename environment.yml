@@ -14,7 +14,10 @@ dependencies:
   - requests=2.28.2
   - tqdm=4.65.0
   
+  # TIMM via pip
   - pip
+  - pip:
+    - timm==0.9.12
   
   # Deep Learning - PyTorch
   - pytorch=2.0.1
