@@ -270,12 +270,22 @@ def train_kfold(
     """
     set_seed(seed)
     
-    # Load full dataset
+    # Load full training dataset
     data_dir = Path(data_dir)
-    full_dataset = CheXpertDataset(
+    
+    # Create separate datasets for train and validation transforms
+    train_dataset = CheXpertDataset(
         csv_path=data_dir / 'train.csv',
         root_dir=data_dir.parent,
         transform=get_transforms(image_size=224, is_training=True),
+        policy='ones'
+    )
+    
+    # Create a version with validation transforms for fold validation
+    train_dataset_eval = CheXpertDataset(
+        csv_path=data_dir / 'train.csv',
+        root_dir=data_dir.parent,
+        transform=get_transforms(image_size=224, is_training=False),
         policy='ones'
     )
     
@@ -287,20 +297,33 @@ def train_kfold(
         policy='ones'
     )
     
-    num_classes = len(full_dataset.labels)
+    num_classes = len(train_dataset.labels)
     print(f"\nTraining {model_name} on {num_classes} labels")
-    print(f"Total training samples: {len(full_dataset)}")
+    print(f"Total training samples: {len(train_dataset)}")
     print(f"Validation samples: {len(val_dataset)}")
+    print(f"K-fold splits: {n_splits}")
     
-    # K-fold cross-validation
+    # Check if we have enough samples for K-fold
+    min_samples_per_fold = batch_size * 2  # At least 2 batches per fold
+    if len(train_dataset) < n_splits * min_samples_per_fold:
+        print(f"\n⚠ WARNING: Training dataset may be too small for {n_splits}-fold CV")
+        print(f"  Training samples: {len(train_dataset)}")
+        print(f"  Minimum recommended: {n_splits * min_samples_per_fold}")
+        print(f"  Consider reducing n_splits or batch_size")
+    
+    # K-fold cross-validation on training set only
     kfold = KFold(n_splits=n_splits, shuffle=True, random_state=seed)
     
     # Store results for all folds
     all_results = []
     
-    for fold, (train_idx, val_idx) in enumerate(kfold.split(full_dataset)):
+    # Split indices based on training dataset
+    dataset_indices = np.arange(len(train_dataset))
+    
+    for fold, (train_idx, val_idx) in enumerate(kfold.split(dataset_indices)):
         print(f"\n{'='*70}")
         print(f"FOLD {fold + 1}/{n_splits}")
+        print(f"Train samples: {len(train_idx)}, Fold validation samples: {len(val_idx)}")
         print(f"{'='*70}")
         
         # Create data samplers
@@ -309,7 +332,7 @@ def train_kfold(
         
         # Create data loaders
         train_loader = DataLoader(
-            full_dataset,
+            train_dataset,  # Use training transforms
             batch_size=batch_size,
             sampler=train_sampler,
             num_workers=4,
@@ -317,7 +340,7 @@ def train_kfold(
         )
         
         fold_val_loader = DataLoader(
-            val_dataset,
+            train_dataset_eval,  # Use validation transforms for fold validation
             batch_size=batch_size,
             sampler=val_sampler,
             num_workers=4,
@@ -328,7 +351,7 @@ def train_kfold(
         model = get_model(model_name, num_classes, pretrained=True)
         model = model.to(device)
         
-        # Loss and optimizer (BCEWithLogitsLoss for multi-label)
+        # Loss and optimizer
         criterion = nn.CrossEntropyLoss()
         optimizer = optim.Adam(model.parameters(), lr=learning_rate)
         
