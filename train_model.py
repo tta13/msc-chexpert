@@ -548,6 +548,9 @@ def train_kfold(
                 print(f"\n⚠ Early stopping triggered after {epoch} epochs")
                 print(f"Best validation loss: {best_fold_loss:.4f}")
                 break
+
+        # Save final checkpoint
+        trainer.save_checkpoint(epoch, fold, train_loss, val_loss)
         
         # Test on validation set (using as test set)
         print(f"\n{'='*70}")
