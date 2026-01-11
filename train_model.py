@@ -541,7 +541,7 @@ def train_kfold(
             
             # Save checkpoint every N epochs (regardless of improvement)
             if epoch % checkpoint_interval == 0:
-                trainer.save_checkpoint(epoch, fold, train_loss, val_loss, is_best=False)
+                trainer.save_checkpoint(epoch, fold, train_loss, val_loss)
             
             # Early stopping
             if trainer.early_stopping(val_loss):
