@@ -3,7 +3,7 @@
 #SBATCH --mem 64G
 #SBATCH -c 32
 #SBATCH -p short-simple
-#SBATCH --gpus=2
+#SBATCH --gpus=4
 #SBATCH --mail-type=FAIL,END
 #SBATCH --mail-user=tta@cin.ufpe.br
 
