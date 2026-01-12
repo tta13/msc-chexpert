@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH --job-name=chexpert
 #SBATCH --mem 64G
-#SBATCH -c 32
+#SBATCH -c 16
 #SBATCH -p short-simple
-#SBATCH --gpus=4
+#SBATCH --gpus=2
 #SBATCH --mail-type=FAIL,END
 #SBATCH --mail-user=tta@cin.ufpe.br
 

@@ -404,14 +404,6 @@ def train_kfold(
         policy='ones'
     )
     
-    # Create a version with validation transforms for fold validation
-    train_dataset_eval = CheXpertDataset(
-        csv_path=data_dir / 'train.csv',
-        root_dir=data_dir.parent,
-        transform=get_transforms(image_size=224, is_training=False),
-        policy='ones'
-    )
-    
     # Get validation dataset for final testing
     val_dataset = CheXpertDataset(
         csv_path=data_dir / 'valid.csv',
@@ -475,7 +467,7 @@ def train_kfold(
         )
         
         fold_val_loader = DataLoader(
-            train_dataset_eval,
+            train_dataset,
             batch_size=batch_size,
             sampler=val_sampler,
             num_workers=num_workers,
@@ -526,7 +518,7 @@ def train_kfold(
             train_loss = trainer.train_epoch(train_loader)
             
             # Validate on fold validation set
-            val_loss, _, val_labels = trainer.validate(fold_val_loader, train_dataset_eval)
+            val_loss, _, val_labels = trainer.validate(fold_val_loader, train_dataset)
             
             print(f"Train Loss: {train_loss:.4f} | Val Loss: {val_loss:.4f}")
             
