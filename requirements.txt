@@ -1,22 +1,26 @@
 # Core dependencies
-pandas==1.5.3
-numpy==1.23.5
-requests==2.28.2
-tqdm==4.65.0
+numpy==1.26.4
+pandas==2.0.3
+requests==2.31.0
+tqdm==4.66.5
 
-# Deep Learning frameworks (choose based on your preference)
-torch==2.0.1
-torchvision==0.15.2
-timm==0.9.12  # PyTorch Image Models (TIMM) for model architectures
+# Deep Learning frameworks
+torch==2.4.1
+torchvision==0.19.1
+timm==1.0.9
+
+# Hugging Face
+transformers==4.45.0
+huggingface_hub==0.25.1
 
 # Image processing
-Pillow==9.5.0
-opencv-python==4.7.0.72
+Pillow==10.4.0
+opencv-python==4.10.0.84
 
 # Data visualization
-matplotlib==3.7.1
-seaborn==0.12.2
+matplotlib==3.9.2
+seaborn==0.13.2
 
 # Utilities
-scikit-learn==1.2.2
-pydicom==2.3.1  # For handling DICOM medical images if needed
+scikit-learn==1.5.2
+pydicom==2.4.4 # For handling DICOM medical images if needed

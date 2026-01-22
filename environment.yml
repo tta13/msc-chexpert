@@ -1,36 +1,45 @@
 name: msc
 channels:
   - pytorch
+  - nvidia
   - conda-forge
   - defaults
-
 dependencies:
-  # Python version
+  # --- Core Python & Build Tools ---
   - python=3.10.8
-  
-  # Core dependencies
-  - pandas=1.5.3
-  - numpy=1.23.5
-  - requests=2.28.2
-  - tqdm=4.65.0
-  
-  # TIMM via pip
   - pip
+  - wheel
+  
+  # --- Heavy Lifters (Best installed via Conda for speed/stability) ---
+  # Ensures CUDA libraries are available if you have a GPU
+  - pytorch=2.4.1
+  - torchvision=0.19.1
+  - pytorch-cuda=12.1  # Adjust '12.1' if you have an older GPU driver
+  
+  # --- Scientific Stack (Conda versions are optimized for MKL/BLAS) ---
+  - numpy=1.26.4
+  - pandas=2.0.3
+  - matplotlib=3.9.2
+  - seaborn=0.13.2
+  - scikit-learn=1.5.2
+  
+  # --- Image Processing Support ---
+  - pillow=10.4.0
+  # Note: Installing opencv via conda-forge avoids apt-get libGL errors
+  - opencv=4.10.0
+
+  # --- Pip-specific packages ---
   - pip:
-    - timm==0.9.12
-  
-  # Deep Learning - PyTorch
-  - pytorch=2.0.1
-  - torchvision=0.15.2
-  #- pytorch-cuda=11.8  # Use pytorch-cuda=11.7 or cpuonly if no GPU
-  
-  # Image processing
-  - pillow=9.5.0
-  - opencv=4.7.0
-  
-  # Data visualization
-  - matplotlib=3.7.1
-  - seaborn=0.12.2
-  
-  # Scientific computing
-  - scikit-learn=1.2.2
+    # Hugging Face Stack
+    - transformers==4.45.0
+    - huggingface-hub==0.25.1
+    - tokenizers==0.19.1
+    - accelerate==0.34.2
+    
+    # Model Architectures
+    - timm==1.0.9
+    
+    # Utilities
+    - tqdm==4.66.5
+    - requests==2.31.0
+    - pydicom==2.4.4

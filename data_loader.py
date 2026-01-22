@@ -124,7 +124,7 @@ class CheXpertDataset(Dataset):
         labels = torch.tensor(labels, dtype=torch.float32)
         
         # Apply transforms
-        if self.transform:
+        if self.transform is not None:
             image = self.transform(image)
         
         return image, labels
