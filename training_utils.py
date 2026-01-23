@@ -30,6 +30,7 @@ from sklearn.metrics import (
     f1_score, roc_auc_score, average_precision_score
 )
 from tqdm import tqdm
+from huggingface_hub import login
 
 
 # ============================================================================
@@ -61,6 +62,22 @@ def worker_init_fn(worker_id: int):
     np.random.seed(worker_seed)
     import random
     random.seed(worker_seed)
+
+# ============================================================================
+# HUGGINGFACE SETUP
+# ============================================================================
+
+def huggingface_login(token: str):
+    """
+    Login in HuggingFace Hub for model access.
+    
+    Args:
+        token: HuggingFace Hub token
+    """
+    if token is not None:
+        login(token=token)
+    else:
+        print("No HUGGINGFACE_HUB_TOKEN found. Make sure you're logged in via 'huggingface-cli login'")
 
 
 # ============================================================================

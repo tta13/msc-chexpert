@@ -19,10 +19,9 @@ import torch
 import torch.nn as nn
 from torchvision import transforms
 from transformers import SiglipImageProcessor, SiglipVisionModel
-from huggingface_hub import login
 
 from data_loader import CheXpertDataset, get_transforms
-from training_utils import train_kfold, save_config, get_device
+from training_utils import train_kfold, save_config, get_device, huggingface_login
 
 
 # ============================================================================
@@ -118,6 +117,7 @@ def main():
     parser.add_argument('--hidden_dims', type=int, nargs='+', default=[512, 256])
     parser.add_argument('--dropout', type=float, default=0.3)
     parser.add_argument('--freeze_backbone', action='store_true')
+    parser.add_argument('--huggingface_hub_token', type=str, default=None)
     
     # Device arguments
     parser.add_argument('--device', type=str, default='cuda', choices=['cuda', 'cpu'])
@@ -141,12 +141,9 @@ def main():
     save_dir = Path(args.save_dir)
     save_dir.mkdir(parents=True, exist_ok=True)
     save_config(args, save_dir)
-
-    if 'HUGGING_FACE_HUB_TOKEN' in os.environ:
-        login(token=os.environ['HUGGING_FACE_HUB_TOKEN'])
-    else:
-        print("No HUGGING_FACE_HUB_TOKEN found. Make sure you're logged in via 'huggingface-cli login'")
-
+    
+    # Huggingface login
+    huggingface_login(args.huggingface_hub_token)
         
     # Create datasets
     data_dir = Path(args.data_dir)

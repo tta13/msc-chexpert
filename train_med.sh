@@ -87,6 +87,7 @@ python train_medsiglip.py \
     --scheduler "$SCHEDULER" \
     --early_stopping_patience "$EARLY_STOPPING_PATIENCE" \
     --freeze_backbone \
+    --huggingface_hub_token "$HUGGINGFACE_HUB_TOKEN"\
     --device "$DEVICE" \
     --data_dir "$DATA_DIR" \
     --checkpoint_interval "$CHECKPOINT_INTERVAL" \
