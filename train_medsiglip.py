@@ -21,7 +21,8 @@ from torchvision import transforms
 from transformers import SiglipImageProcessor, SiglipVisionModel
 
 from data_loader import CheXpertDataset, get_transforms
-from training_utils import train_kfold, save_config, get_device, huggingface_login
+from training_utils import train_kfold, save_config, get_device
+from utils import huggingface_login
 
 
 # ============================================================================

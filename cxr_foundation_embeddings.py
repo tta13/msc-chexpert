@@ -19,7 +19,7 @@ from PIL import Image
 from tqdm import tqdm
 import tensorflow as tf
 from huggingface_hub import snapshot_download
-
+from utils import huggingface_login
 
 def load_cxr_foundation_model():
     """
