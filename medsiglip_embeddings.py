@@ -64,7 +64,7 @@ def compute_embedding(model, processor, image_path: Path, device: str = 'cuda') 
     image = Image.open(image_path).convert('RGB')
     
     # Process image
-    inputs = processor(images=image, return_tensors="pt")
+    inputs = processor(images=image, return_tensors="pt").to(device)
     
     # Get embeddings
     outputs = model(**inputs)
@@ -115,7 +115,7 @@ def compute_embeddings_for_split(
             images = [Image.open(path).convert('RGB') for path in batch_paths]
             
             # Process batch
-            inputs = processor(images=images, return_tensors="pt")
+            inputs = processor(images=images, return_tensors="pt").to(device)
             
             # Get embeddings
             outputs = model(**inputs)
@@ -220,7 +220,7 @@ def main():
     
     # Huggingface login
     huggingface_login(args.huggingface_hub_token)
-    
+
     # Load model
     model, processor = load_medsiglip_model(device=args.device)
     
