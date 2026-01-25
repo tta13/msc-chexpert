@@ -2,7 +2,7 @@
 #SBATCH --job-name=medsiglip_chexpert
 #SBATCH --mem 64G
 #SBATCH -c 16
-#SBATCH -p short-simple
+#SBATCH -p long-simple
 #SBATCH --gpus=1
 #SBATCH --mail-type=FAIL,END
 #SBATCH --mail-user=tta@cin.ufpe.br
