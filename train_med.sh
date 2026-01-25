@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --job-name=medsiglip_chexpert
-#SBATCH --mem 64G
-#SBATCH -c 16
-#SBATCH -p long-simple
+#SBATCH --job-name=medsiglip_train
+#SBATCH --mem 32G
+#SBATCH -c 8
+#SBATCH -p short-simple
 #SBATCH --gpus=1
 #SBATCH --mail-type=FAIL,END
 #SBATCH --mail-user=tta@cin.ufpe.br
@@ -33,6 +33,14 @@ echo ""
 echo "PyTorch GPU check:"
 python -c "import torch; print(f'PyTorch version: {torch.__version__}'); print(f'CUDA available: {torch.cuda.is_available()}'); print(f'GPU count: {torch.cuda.device_count()}'); print(f'Current device: {torch.cuda.current_device() if torch.cuda.is_available() else \"CPU\"}'); print(f'Device name: {torch.cuda.get_device_name(0) if torch.cuda.is_available() else \"CPU\"}')"
 
+echo ""
+echo "================================================"
+echo "MedSigLIP Training (Precomputed Embeddings)"
+echo "================================================"
+echo "Job started at: $(date)"
+echo "================================================"
+echo ""
+
 # Load configuration from .env file
 echo ""
 echo "Loading configuration from .env file..."
@@ -54,31 +62,30 @@ fi
 echo ""
 echo "================================================"
 echo "Training Configuration:"
-echo "Model: $MODEL"
-echo "Epochs: $EPOCHS"
-echo "Batch Size: $BATCH_SIZE"
-echo "Learning Rate: $LEARNING_RATE"
-echo "Weight Decay: $WEIGHT_DECAY"
-echo "K-Folds: $N_SPLITS"
-echo "Scheduler: $SCHEDULER"
-echo "Early Stopping Patience: $EARLY_STOPPING_PATIENCE"
-echo "Device: $DEVICE"
-echo "Data Directory: $DATA_DIR"
-echo "Save Directory: $SAVE_DIR"
-echo "Checkpoint Interval: $CHECKPOINT_INTERVAL"
-echo "Random Seed: $SEED"
+echo "  Embeddings Directory: $EMBEDDINGS_DIR"
+echo "  Data Directory: $DATA_DIR"
+echo "  Save Directory: $SAVE_DIR"
+echo "  Epochs: $EPOCHS"
+echo "  Batch Size: $BATCH_SIZE"
+echo "  Learning Rate: $LEARNING_RATE"
+echo "  Weight Decay: $WEIGHT_DECAY"
+echo "  K-Folds: $N_SPLITS"
+echo "  Scheduler: $SCHEDULER"
+echo "  Early Stopping Patience: $EARLY_STOPPING_PATIENCE"
+echo "  Device: $DEVICE"
+echo "  Checkpoint Interval: $CHECKPOINT_INTERVAL"
+echo "  Hidden Dims: $HIDDEN_DIMS"
+echo "  Dropout: $DROPOUT"
+echo "  Random Seed: $SEED"
+echo "  Num Workers: $NUM_WORKERS"
 echo "================================================"
 echo ""
 
-# Validate required parameters
-if [ -z "$MODEL" ] || [ -z "$EPOCHS" ] || [ -z "$BATCH_SIZE" ]; then
-    echo "✗ ERROR: Missing required configuration parameters!"
-    echo "Please ensure MODEL, EPOCHS, and BATCH_SIZE are set in .env"
-    exit 1
-fi
-
-# Run training
+# Run training on precomputed embeddings
 python train_medsiglip.py \
+    --embeddings_dir "$EMBEDDINGS_DIR" \
+    --data_dir "$DATA_DIR" \
+    --save_dir "$SAVE_DIR" \
     --epochs "$EPOCHS" \
     --batch_size "$BATCH_SIZE" \
     --learning_rate "$LEARNING_RATE" \
@@ -86,12 +93,10 @@ python train_medsiglip.py \
     --n_splits "$N_SPLITS" \
     --scheduler "$SCHEDULER" \
     --early_stopping_patience "$EARLY_STOPPING_PATIENCE" \
-    --freeze_backbone \
-    --huggingface_hub_token "$HUGGINGFACE_HUB_TOKEN"\
     --device "$DEVICE" \
-    --data_dir "$DATA_DIR" \
     --checkpoint_interval "$CHECKPOINT_INTERVAL" \
-    --save_dir "$SAVE_DIR" \
+    --hidden_dims $HIDDEN_DIMS \
+    --dropout "$DROPOUT" \
     --num_workers "$NUM_WORKERS" \
     --seed "$SEED"
 
