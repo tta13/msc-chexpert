@@ -69,6 +69,9 @@ def compute_embedding(model, processor, image_path: Path, device: str = 'cuda') 
     # Get embeddings
     outputs = model(**inputs)
     embedding = outputs["pooler_output"] / outputs["pooler_output"].norm(p=2, dim=-1, keepdim=True)
+
+    # Move back to CPU for numpy conversion
+    embedding = embedding.cpu().numpy()[0]  # Shape: [1152]
     
     return embedding
 
@@ -120,11 +123,20 @@ def compute_embeddings_for_split(
             # Get embeddings
             outputs = model(**inputs)
             embeddings = outputs["pooler_output"] / outputs["pooler_output"].norm(p=2, dim=-1, keepdim=True)
+
+            # Move back to CPU for numpy conversion
+            embedding = embedding.cpu().numpy()  # Shape: [batch_size, 1152]
             
             embeddings_list.append(embeddings)
             
+            # Clear GPU cache periodically
+            if i % (batch_size * 10) == 0:
+                torch.cuda.empty_cache()
+            
         except Exception as e:
             print(f"\n⚠ Error processing batch {i}-{i+len(batch_paths)}: {e}")
+            # Clear cache on error
+            torch.cuda.empty_cache()
             # Process individually if batch fails
             for path in batch_paths:
                 try:
@@ -151,6 +163,9 @@ def compute_embeddings_for_split(
     
     print(f"✓ Saved embeddings to: {output_path}")
     
+    # Final cleanup
+    torch.cuda.empty_cache()
+
     return {
         'embeddings': embeddings_array,
         'paths': paths_array
