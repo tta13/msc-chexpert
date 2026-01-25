@@ -73,7 +73,8 @@ python compute_medsiglip_embeddings.py \
     --output_dir "$SAVE_DIR" \
     --splits train valid \
     --batch_size "$BATCH_SIZE" \
-    --device "$DEVICE"
+    --device "$DEVICE" \
+    --huggingface_hub_token "$HUGGINGFACE_HUB_TOKEN"
 
 echo ""
 echo "================================================"

@@ -18,6 +18,7 @@ import torch
 from PIL import Image
 from tqdm import tqdm
 from transformers import SiglipVisionModel, SiglipImageProcessor
+from utils import huggingface_login
 
 
 def load_medsiglip_model(device: str = 'cuda'):
@@ -46,45 +47,30 @@ def load_medsiglip_model(device: str = 'cuda'):
 
 
 @torch.no_grad()
-def compute_embeddings_batch(
-    model, 
-    processor, 
-    image_paths: list, 
-    device: str = 'cuda',
-    batch_size: int = 32
-) -> np.ndarray:
+def compute_embedding(model, processor, image_path: Path, device: str = 'cuda') -> np.ndarray:
     """
-    Compute embeddings for a batch of images.
+    Compute MedSigLIP embedding for a single image.
     
     Args:
         model: MedSigLIP model
         processor: MedSigLIP processor
-        image_paths: List of image paths
+        image_path: Path to image
         device: Device to run on
-        batch_size: Batch size for processing
         
     Returns:
-        Embeddings array of shape [N, 1152]
+        Embedding array of shape [1152]
     """
-    all_embeddings = []
+    # Load image
+    image = Image.open(image_path).convert('RGB')
     
-    for i in range(0, len(image_paths), batch_size):
-        batch_paths = image_paths[i:i + batch_size]
-        
-        # Load images
-        images = [Image.open(path).convert('RGB') for path in batch_paths]
-        
-        # Process batch
-        inputs = processor(images=images, return_tensors="pt")
-        
-        # Get embeddings
-        outputs = model(**inputs)
-        embeddings = outputs["pooler_output"] / outputs["pooler_output"].norm(p=2, dim=-1, keepdim=True)
-        
-        all_embeddings.append(embeddings)
+    # Process image
+    inputs = processor(images=image, return_tensors="pt")
     
-    return np.vstack(all_embeddings)
-
+    # Get embeddings
+    outputs = model(**inputs)
+    embedding = outputs["pooler_output"] / outputs["pooler_output"].norm(p=2, dim=-1, keepdim=True)
+    
+    return embedding
 
 def compute_embeddings_for_split(
     model,
@@ -207,7 +193,8 @@ def main():
         default='cuda',
         choices=['cuda', 'cpu'],
         help='Device to run on (default: cuda)'
-    )
+    )    
+    parser.add_argument('--huggingface_hub_token', type=str, default=None, help='HugginFace Hub login token')
     
     args = parser.parse_args()
     
@@ -230,6 +217,9 @@ def main():
     root_dir = data_dir.parent
     
     output_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Huggingface login
+    huggingface_login(args.huggingface_hub_token)
     
     # Load model
     model, processor = load_medsiglip_model(device=args.device)
