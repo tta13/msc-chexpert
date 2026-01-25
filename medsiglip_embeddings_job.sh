@@ -68,7 +68,7 @@ echo "================================================"
 echo ""
 
 # Run embedding computation
-python compute_medsiglip_embeddings.py \
+python medsiglip_embeddings.py \
     --data_dir "$DATA_DIR" \
     --output_dir "$SAVE_DIR" \
     --splits train valid \
